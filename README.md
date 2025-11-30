@@ -1,4 +1,4 @@
-<h1 align="center">inQueries Art</h1>
+<h1 align="center">How to inQueries</h1>
 <h3 align="center">Hint: Click anywhere from below poster to watch the Project Demo</h3>
 
 <p>
@@ -60,15 +60,59 @@
   <img src="https://github.com/user-attachments/assets/fd531a89-9f65-46ed-8535-2cc1badae24e" alt="Academic Poster_page-0001">
 </a>
 
-## Project Overview
+# Project Overview
+**inQueries** is a lightweight, explainable scam-link detection system built entirely using open-source components and free-tier services. Designed as a Telegram chatbot, the system allows users to submit URLs and receive structured, human-readable safety assessments in real time.
 
-This chatbot operationalized real-time **phishing detection** using a scalable, publicly accessible stack modeled on **SOC triage principles**.
+The project demonstrates how **Retrieval-Augmented Generation (RAG)**, **rule-based classification**, **real-time threat-intelligence APIs**, and a **locally hosted LLM** can be combined into a practical, zero-cost cybersecurity tool suitable for public use.
 
-This complex system, which I built **independently over a four-month academic schedule**, employs **Dockerized n8n workflows** to unify threat intelligence from **VirusTotal** and **URLScan.io**. At its core, a custom **Retrieval-Augmented Generation (RAG) LLM**, orchestrated by **LangChain** and utilizing a **Pinecone** vector database with **Llama 3.2**, generates user-friendly, **explainable risk summaries** delivered via Telegram.
+By embedding both detection and natural-language explanation into a familiar messaging interface, inQueries helps bridge the gap between advanced phishing-detection research and everyday user accessibility.
 
-The solution demonstrates the feasibility of high-accuracy security tools built entirely on **free-tier and open-source components**.
+## ✅ Key Features & Contributions
 
-## 🛠️ How To Set Up inQueries on Your Own Machine
+### **1. Public-Facing Phishing Detection**
+
+* Converts cybersecurity research into a Telegram-based chatbot.
+* Integrates RAG and explainable AI to produce user-friendly threat summaries.
+
+### **2. Zero-Cost Automated Detection Workflow**
+
+* Built using **n8n**, **VirusTotal**, **urlscan.io**, and **Ollama-hosted LLMs**.
+* Entire pipeline operates without recurring costs or commercial infrastructure.
+
+### **3. Explainable Security Feedback**
+
+* Converts technical metadata into accessible explanations using structured prompts.
+* Provides clear, human-readable reasoning for each URL assessment.
+
+### **4. Real-Time Threat Alignment via Vector Retrieval**
+
+* Generates summary embeddings using the **mxbai-embed-large** model.
+* Stores results in a Pinecone index for semantic retrieval of previously scanned URLs.
+* Enhances explanation specificity and system interpretability.
+
+### **5. Rule-Based Risk Classifier**
+
+* Utilizes verified antivirus engine verdicts for threat severity scoring.
+* Ensures reliable and transparent decision logic.
+
+### **6. Validated Responsiveness**
+
+* System performance measured under GPU-accelerated local conditions.
+* Confirms feasibility for interactive, real-time use.
+
+## ⚠️ Current Limitations
+
+While the prototype meets its core objectives, several constraints remain:
+
+* **API variability**: VirusTotal and urlscan.io response times may fluctuate, especially for shortened or suspicious URLs.
+* **Local model latency**: LLaMA-based inference introduces 6–12s processing time, occasionally pushing total response duration beyond 60s.
+* **No multi-user testing**: Concurrent interactions and state management were out of scope.
+* **Limited explainability evaluation**: No formal user study on clarity or trustworthiness.
+* **Prompting constraints**: LLM explanations depend on a hand-crafted prompt without alternative strategies tested.
+
+These limitations do not undermine the proof-of-concept, but identify areas for improvement—particularly for scaling, usability testing, and more advanced retrieval or explanation methods.
+
+# 🛠️ How To Set Up inQueries on Your Own Machine
 
 This guide explains how to set up and run the inQueries system locally using **Docker**, **n8n**, and **Ngrok**.
 
