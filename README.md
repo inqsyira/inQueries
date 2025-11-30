@@ -112,9 +112,7 @@ While the prototype meets its core objectives, several constraints remain:
 
 These limitations do not undermine the proof-of-concept, but identify areas for improvement—particularly for scaling, usability testing, and more advanced retrieval or explanation methods.
 
-# 🛠️ How To Set Up inQueries on Your Own Machine
-
-This guide explains how to set up and run the inQueries system locally using **Docker**, **n8n**, and **Ngrok**.
+# 🛠️ Set Up inQueries on Your Own Machine
 
 ### Step 1: Set Up Ngrok (Webhook Tunnel)
 
