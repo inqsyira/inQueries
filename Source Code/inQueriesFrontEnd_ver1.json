@@ -1,0 +1,855 @@
+{
+  "name": "inQueriesFrontEnd-ver1",
+  "nodes": [
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.from.id }}",
+        "text": "={{ $('LLM Chain').item.json.text.replace(/&/g, \"&amp;\").replace(/>/g, \"&gt;\").replace(/</g, \"&lt;\").replace(/\"/g, \"&quot;\") }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "d59ba342-84e3-4134-9972-c9b364d53fe5",
+      "name": "Correct errors",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        -3260,
+        2500
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "4bb67d60-32ae-4bd1-9ca8-c834ab5edf08",
+      "credentials": {
+        "telegramApi": {
+          "id": "Ozb6IKfxEQ0jE5nj",
+          "name": "0194732486"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "inqueries-testing",
+          "mode": "list",
+          "cachedResultName": "inqueries-testing"
+        },
+        "prompt": "={{ $node[\"ioc-url\"].json[\"domain\"] }}",
+        "topK": 1,
+        "options": {
+          "pineconeNamespace": "={{ $json.riskLevel }}",
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "filterbyScanID",
+                "value": "={{ $json.filterbyScanID }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "8e935ada-97e7-4d24-82c9-7f3dac99ec33",
+      "name": "Retrieve Relevant Documents from Pinecone",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        -3800,
+        2440
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "pineconeApi": {
+          "id": "2pBfPMLH30qRm4jr",
+          "name": "PineconeApi bubysh"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const userQuery =  $input.first().json.document.metadata.exact_url\n// Retrieve the user query from the previous node output.\nconst userName = $(\"Telegram Trigger\").json?.message?.chat?.first_name \nconst contextContent = $input.first().json.document.pageContent\n// Build the final prompt that combines the context with the user query.\nconst prompt = `Using the following context from documents:\\n\\n${contextContent}\\n\\nAnswer the following question:\\n Is this scam link ${userQuery}. Username is ${userName}\\n\\nAnswer:`;\n\n// Return the prompt so it can be passed to a Chat/AI node for further processing.\nreturn [{ json: { prompt } }];\n"
+      },
+      "id": "b5e2facc-ac4d-4713-aa13-95dc4839edb2",
+      "name": "Generate Chat Prompt with Context",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -3480,
+        2420
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -3740,
+        2740
+      ],
+      "id": "5f0812ba-92aa-40fa-9725-99087f2e4b77",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "lLAlKNlYk6QuTNki",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "=recordTest",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "19fFR3zNrZ5YyESaqGO6g8R7Uvyp5BP_H",
+            "mode": "list",
+            "cachedResultName": "dataset_ver2",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/19fFR3zNrZ5YyESaqGO6g8R7Uvyp5BP_H"
+          },
+          "whatToSearch": "files",
+          "fileTypes": [
+            "application/vnd.google-apps.spreadsheet"
+          ],
+          "includeTrashed": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -4300,
+        2320
+      ],
+      "id": "bf385dac-fe08-4d1b-b09d-4a267b5b5b6e",
+      "name": "Google Drive Search",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Lp5E90uYQXKREjdE",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "binaryPropertyName": "data",
+          "googleFileConversion": {
+            "conversion": {}
+          },
+          "fileName": "record"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -4280,
+        2520
+      ],
+      "id": "e9e6ecae-4bf6-4170-affe-2bdd4fb445bc",
+      "name": "Google Drive Download",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Lp5E90uYQXKREjdE",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6bda56a3-8dfd-418f-a2f1-bafaf2b3c86e",
+              "name": "scannedLink",
+              "value": "={{ $json[\"scannedLink\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "b31cf070-8d02-45be-b302-7a1fc6f3f984",
+              "name": "riskLevel",
+              "value": "={{ $json[\"riskLevel\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "8e9784fb-9450-4b17-8b0e-9d544890ef1c",
+              "name": "filterbyScanID",
+              "value": "={{ $json[\"scanId\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "f2051283-4437-4a5d-a8fc-a1497c912966",
+              "name": "chat_id",
+              "value": "={{ $node[\"Telegram Trigger\"].json[\"message\"][\"chat\"][\"id\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "d8dde76c-cebd-4140-b24a-ebe1cd1e91f4",
+              "name": "text_msg",
+              "value": "={{ $node[\"Telegram Trigger\"].json[\"message\"][\"text\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "b0a71807-820d-4a1a-ab06-0dec4a41a2f6",
+              "name": "full_name",
+              "value": "={{ $node[\"Telegram Trigger\"].json[\"message\"][\"from\"][\"first_name\"] }} {{ $node[\"Telegram Trigger\"].json[\"message\"][\"from\"][\"last_name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "cc8e2b5c-18e8-43bd-aee9-a8d6d711df0f",
+              "name": "lang_code",
+              "value": "={{ $node[\"Telegram Trigger\"].json[\"message\"][\"from\"][\"language_code\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "7fe9ceca-de2c-4f01-9c74-efb74a557397",
+              "name": "first_name",
+              "value": "={{ $node[\"Telegram Trigger\"].json[\"message\"][\"from\"][\"first_name\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3960,
+        2460
+      ],
+      "id": "c27f0441-7bd5-4ca2-826f-a0679615e3d4",
+      "name": "set_input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4e39fdf3-462c-42ee-b170-3afb540767a6",
+              "name": "prompt",
+              "value": "=Answer the following question in short: {{ $node[\"Telegram Trigger\"].json[\"message\"][\"text\"] }}\nUse easy simple and easy language. Call user by the name {{ $node[\"Telegram Trigger\"].json[\"message\"][\"from\"][\"first_name\"] }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4320,
+        2680
+      ],
+      "id": "978929ed-47a2-4534-b12c-484d07b63f06",
+      "name": "set_prompt"
+    },
+    {
+      "parameters": {
+        "values": {
+          "number": [
+            {
+              "name": "model_temperature",
+              "value": 0.8
+            },
+            {
+              "name": "token_length",
+              "value": 500
+            }
+          ],
+          "string": [
+            {
+              "name": "system_command",
+              "value": "=You are an inQueries Chatbot. Your primary role is answer user's query. You are interacting with user {{ $json?.message?.from?.first_name }}. Use {{ $json?.message?.from?.language_code }} to reply in the user's language. First, detect user text language and use it for your answer. You should keep your tone friendly, and easy to understand. Assist user to start by forwarding suspicious message containing links or just copy and paste the link here while reminding the user to be extra careful to not clicking the link."
+            },
+            {
+              "name": "bot_typing",
+              "value": "={{ $json?.message?.text.startsWith('/image') ? \"upload_photo\" : \"typing\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6c5f1e97-4d48-46de-a8d0-d88a8ffeeb30",
+      "name": "Settings",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -4960,
+        2480
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "updates": [
+          "*"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -5080,
+        2580
+      ],
+      "id": "6b03e998-4443-401e-8602-253632574915",
+      "name": "Telegram Trigger",
+      "webhookId": "3a3f1498-ec52-4f6b-bc9d-67f1361ac996",
+      "credentials": {
+        "telegramApi": {
+          "id": "Ozb6IKfxEQ0jE5nj",
+          "name": "0194732486"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch"
+      },
+      "id": "17fafa60-0cd8-4bd0-b4ba-2411cae27082",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        -4720,
+        2500
+      ],
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $json.message.from.id }}",
+        "action": "={{ $json.bot_typing }}"
+      },
+      "id": "4e02f80f-8aea-41d6-84a5-a54dab30ed8c",
+      "name": "Send Typing action",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        -4840,
+        2580
+      ],
+      "typeVersion": 1,
+      "webhookId": "12bf0259-d15c-4eda-b84a-eba6ab64db2a",
+      "credentials": {
+        "telegramApi": {
+          "id": "Ozb6IKfxEQ0jE5nj",
+          "name": "0194732486"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "try:\n  from ioc_finder import find_iocs  #check ioc_finder availability\nexcept ImportError:\n  import micropip  \n  await micropip.install(\"ioc-finder\")  \n  from ioc_finder import find_iocs\n\ntext = _input.first().json[\"message\"][\"text\"]\nprint(text) #for debugging\n\niocs = find_iocs(text) #detect ioc within text\n\nreturn [{\"json\": { \"domain\": item }} for item in iocs[\"urls\"]] #return all url founds in json format"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4600,
+        2460
+      ],
+      "id": "e39610a4-fc57-4188-a533-9f0f3d3a7b7b",
+      "name": "ioc-url",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "81dbfba7-48e1-4150-af54-c3931603f4f9",
+              "leftValue": "={{ $json.domain }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4460,
+        2420
+      ],
+      "id": "52641731-1128-4815-bf42-3a0948521713",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -4120,
+        2520
+      ],
+      "id": "dd58fea6-a6da-4a2f-8565-d6140905e3ea",
+      "name": "Extract from CSV"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Inspect for matched URL as we dont want repeated work\nconst urlToMatch = $node[\"If1\"].json[\"domain\"];\nconst items = $input.all().map(item => item.json);\n\nconst matches = items.map(item => {\n  const scannedUrl = item.scannedLink;\n  // Compare the full URLs exactly (case-insensitive for safety)\n  const isMatch = scannedUrl.toLowerCase() === urlToMatch.toLowerCase();\n\n  return {\n    json: {\n      ...item,\n      matchesUrl: isMatch\n    }\n  };\n});\n\n// Filter to return only matching items\nreturn matches.filter(item => item.json.matchesUrl);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4100,
+        2280
+      ],
+      "id": "6a7828a7-69d2-482f-8211-daaaaa00d9dc",
+      "name": "Check Past Record",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "92cd68b0-020b-4ee1-aa17-13795e44f8b8",
+              "leftValue": "={{ $json.matchesUrl }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3960,
+        2280
+      ],
+      "id": "3cab587a-73a4-4e63-9e11-86d27acea503",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6452d3da-10ac-446e-bf65-73072ab88684",
+              "name": "domain",
+              "value": "={{ $('If1').first().json.domain }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {
+          "ignoreConversionErrors": false
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3800,
+        2240
+      ],
+      "id": "01b956e2-4f68-4cb2-be79-1f0a2470f9ad",
+      "name": "Pass All Data"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.from.id }}",
+        "text": "={{ $json[\"text\"] }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "e37d95f2-7834-4dfd-9c45-a11c71fe8b82",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        -3380,
+        2660
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "8fdab83f-4eb2-48ff-b6a0-960ee6ca2c2b",
+      "credentials": {
+        "telegramApi": {
+          "id": "Ozb6IKfxEQ0jE5nj",
+          "name": "0194732486"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=<system prompt>\nYOU ARE INQUERIES CHATBOT — A HIGHLY SPECIALIZED CYBERSECURITY AI ASSISTANT TRAINED TO ANALYZE URL SCAN RESULTS AND REPORT RISK LEVELS TO END-USERS IN A FRIENDLY, INFORMATIVE FORMAT.\n\n<instructions>\n- READ THE STRUCTURED CONTEXT THAT INCLUDES:  \n  • detection_counts (malicious, suspicious, harmless, undetected)  \n  • confidence_score  \n  • risk_level  \n  • trusted_summary  \n  • scan date and participating antivirus partners.\n\n- ANALYZE THE DATA STEP BY STEP:  \n  1. Start with detection totals  \n  2. Check for involvement of trusted engines  \n  3. Factor in confidence score  \n  4. Confirm final risk level classification\n\n- FORMAT YOUR RESPONSE AS FOLLOWS:\n\n1. Start With A Risk Header:  \n   Example:  \n   Risk Level: High with 85% confidence – 4 malicious (including trusted engines) use emoji\n\n2. Friendly Message Addressed to “{{ $node[\"Telegram Trigger\"].json[\"message\"][\"from\"][\"first_name\"] }}”:  \n   - Use tone based on the `risk_level`:\n     • Low → “Good news”\n     • Medium → “Caution” or “Heads up”\n     • High → “Bad news” or “Warning,”\n\n3. Summary Sentence About Threat Level and Why:  \n   - Explain in plain language the key factors:  \n     • Presence or absence of malicious/suspicious counts  \n     • Trusted engine verdicts  \n     • Confidence level considerations\n\n4. Detection Summary (Use Emojis):  \nDetection Summary:\n🛡 Malicious: X\n⚠️ Suspicious: Y\n✅ Harmless: Z\n❔ Undetected: W\n\n5. Trusted Engine Involvement:  \n- If any, summarize with wording like:  \n  “The link was scanned by 97 antivirus engines including ESET, Fortinet, Kaspersky, Sophos — all reporting it as harmless.”\n\n6. Always Include the Following Links (in exact format):  \n- Report: https://urlscan.io/result/[scan-id]/  \n- Screenshot: https://urlscan.io/screenshots/[scan-id].png\n\n7. End With a Friendly Offer for More Help:  \nExample:  \n“Let me know if you want to check another link. Stay safe!”\n\n- MATCH THE STYLE OF THE THREE GIVEN EXAMPLES.\n- IF RISK LEVEL IS MEDIUM, USE CAUTIOUS LANGUAGE.\n- IF TRUSTED ENGINES FLAGGED MALICIOUS, USE STRONG WARNING TONE.\n- KEEP RESPONSES CONCISE, FRIENDLY, AND EASY TO UNDERSTAND.\n\n<conditions>\n- IF THE USER MESSAGE **CONTAINS A URL**, FOLLOW THE ABOVE INSTRUCTIONS.\n- IF THE USER MESSAGE **DOES NOT CONTAIN A URL**, SWITCH TO THIS ALTERNATE ROLE AND BEHAVIOR:\n{{ $node[\"Settings\"].json[\"system_command\"] }}\n\n<what not to do>\n- NEVER USE GENERIC CYBERSECURITY JARGON\n- DO NOT FOLLOW THE MAIN ANALYSIS INSTRUCTIONS IF NO URL IS PRESENT\n- DO NOT format any part of the message using markdown (no bold, italic, asterisks, or underscores). Keep all responses in plain text.\n"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        -3660,
+        2620
+      ],
+      "id": "6cbcd1a3-4d73-4c24-a02d-2b93a4a5623a",
+      "name": "LLM Chain"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "wzS6vJFQxmWosll1",
+          "mode": "list",
+          "cachedResultName": "inQueriesBackend-ver1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        -3640,
+        2240
+      ],
+      "id": "7175c0af-a7a8-434c-bc7c-3238ed3b0007",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "model": "mxbai-embed-large:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        -3880,
+        2660
+      ],
+      "id": "60a651c8-22fc-456f-b932-8334a7482e3f",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "lLAlKNlYk6QuTNki",
+          "name": "Ollama account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Retrieve Relevant Documents from Pinecone": {
+      "main": [
+        [
+          {
+            "node": "Generate Chat Prompt with Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Chat Prompt with Context": {
+      "main": [
+        [
+          {
+            "node": "LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Search": {
+      "main": [
+        [
+          {
+            "node": "Google Drive Download",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Download": {
+      "main": [
+        [
+          {
+            "node": "Extract from CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set_input": {
+      "main": [
+        [
+          {
+            "node": "Retrieve Relevant Documents from Pinecone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set_prompt": {
+      "main": [
+        [
+          {
+            "node": "LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Settings": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Typing action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "ioc-url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Typing action": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "ioc-url": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Google Drive Search",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "set_prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from CSV": {
+      "main": [
+        [
+          {
+            "node": "Check Past Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Past Record": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "set_input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pass All Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass All Data": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Correct errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow": {
+      "main": [
+        [
+          {
+            "node": "set_input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Retrieve Relevant Documents from Pinecone",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "5ff919b6-158f-4554-8baa-1d5a96118019",
+  "meta": {
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "LgOzwEVMr7WkQu9a",
+  "tags": [
+    {
+      "createdAt": "2025-06-27T19:22:16.802Z",
+      "updatedAt": "2025-06-27T19:22:16.802Z",
+      "id": "L6QAQnNdXDf8nsTu",
+      "name": "latest frontend"
+    }
+  ]
+}

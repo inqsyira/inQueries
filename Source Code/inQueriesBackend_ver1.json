@@ -1,0 +1,816 @@
+{
+  "name": "inQueriesBackend-ver1",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{ $json.domain }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.urlScanIo",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        320
+      ],
+      "id": "ab7ff671-035c-4b59-bfaf-a11bb85cf429",
+      "name": "urlscan.io",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "credentials": {
+        "urlScanIoApi": {
+          "id": "LpmbpZkM7dSgfW8y",
+          "name": "urlscan.io account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "curlImport": "",
+        "httpVariantWarning": "",
+        "method": "POST",
+        "url": "https://www.virustotal.com/api/v3/urls",
+        "": "",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "virusTotalApi",
+        "provideSslCertificates": false,
+        "sendQuery": true,
+        "specifyQuery": "keypair",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.domain }}"
+            }
+          ]
+        },
+        "sendHeaders": false,
+        "sendBody": false,
+        "options": {},
+        "infoMessage": ""
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -800,
+        640
+      ],
+      "id": "392f702c-3c16-4ee3-a306-619b79e2d071",
+      "name": "VirusTotal Scan URL",
+      "extendsCredential": "virusTotalApi",
+      "credentials": {
+        "virusTotalApi": {
+          "id": "OozDuAqmvyHCPol5",
+          "name": "VirusTotal account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "scanId": "={{ $json.scanId }}"
+      },
+      "id": "5744793e-6315-4cab-bdb1-832e250a3c57",
+      "name": "URLScan: Get report",
+      "type": "n8n-nodes-base.urlScanIo",
+      "position": [
+        -280,
+        400
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "urlScanIoApi": {
+          "id": "LpmbpZkM7dSgfW8y",
+          "name": "urlscan.io account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "b90d5d4b-6106-42f1-a0c0-227fcce89657",
+      "name": "Merge Reports",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        -60,
+        320
+      ],
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f09c96cc-ad2a-40bb-85b8-147f781cbbe6",
+              "leftValue": "={{ $json.data.attributes.status }}",
+              "rightValue": "completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -280,
+        640
+      ],
+      "id": "60e6595d-c5d4-4e7c-a245-560f46bbe911",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -620,
+        640
+      ],
+      "id": "049eba61-3873-4b08-b7c1-72592c232176",
+      "name": "Wait 15 secs",
+      "webhookId": "a73d389f-e263-4db3-9197-bf76e1fb533e"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "57cd8bcd-16af-444d-ab8d-15b36481d261",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -640,
+        320
+      ],
+      "id": "e8876b83-363f-4ba5-9b70-c06761f01179",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "url": "=https://www.virustotal.com/api/v3/analyses/{{ $json.data.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "virusTotalApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "resource",
+              "value": "https://developers.virustotal.com/v2.0/reference/url-report"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "57492d7c-38f6-4058-9a4d-53fb786f4486",
+      "name": "VT Report1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -460,
+        640
+      ],
+      "typeVersion": 4.1,
+      "credentials": {
+        "virusTotalApi": {
+          "id": "OozDuAqmvyHCPol5",
+          "name": "VirusTotal account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://www.virustotal.com/api/v3/analyses/{{ $json.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "virusTotalApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "resource",
+              "value": "https://developers.virustotal.com/v2.0/reference/url-report"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "85da203e-1be2-45a2-acbf-7b977a56762b",
+      "name": "VT Report2",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        240,
+        600
+      ],
+      "typeVersion": 4.1,
+      "credentials": {
+        "virusTotalApi": {
+          "id": "OozDuAqmvyHCPol5",
+          "name": "VirusTotal account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9c84ede5-f44a-4807-997a-8386b0bf4bef",
+              "name": "id",
+              "value": "={{ $('VT Report1').item.json.data.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        600
+      ],
+      "id": "339e806b-f5e5-44a2-bfed-d662d05da497",
+      "name": "Set Scan ID"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "1d53830a-ddda-4729-8e8c-853cb04d721f",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -980,
+        480
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "inqueries-testing",
+          "mode": "list",
+          "cachedResultName": "inqueries-testing"
+        },
+        "embeddingBatchSize": 64,
+        "options": {
+          "pineconeNamespace": "={{ $node[\"Data Transform\"].json[\"risk_level\"] }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        580,
+        320
+      ],
+      "id": "213c4141-f519-49c7-9491-36288ff9ed2e",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "2pBfPMLH30qRm4jr",
+          "name": "PineconeApi bubysh"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "exact_url",
+                "value": "={{ $('Data Transform').item.json.exact_url }}"
+              },
+              {
+                "name": "riskLevel",
+                "value": "={{ $('Data Transform').item.json.risk_level }}"
+              },
+              {
+                "name": "filterbyScanID",
+                "value": "={{ $('Data Transform').item.json.filterbyScanID }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        720,
+        500
+      ],
+      "id": "4ef6b6b8-131d-4704-b8f2-936acbb1f493",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "model": "mxbai-embed-large:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        580,
+        540
+      ],
+      "id": "0f3f4c0d-b400-4902-ac1a-c0a78757d90b",
+      "name": "Embeddings Ollama1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "lLAlKNlYk6QuTNki",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const task = $json?.task;\nconst stats = $json?.data?.attributes?.stats || {};\nconst results = $json?.data?.attributes?.results || {};\nconst url = $json?.meta?.url_info?.url || \"Unknown URL\";\nconst scanId = $json?.data?.id;\n\n// Calculate scam risk and scam confident score\nfunction classifyRisk({ malicious = 0, suspicious = 0 }) {\n  if (malicious >= 3 || (malicious >= 1 && suspicious >= 2))\n    return { risk: \"High Risk\", confidence: Math.min(malicious * 20 + suspicious * 10, 100) };\n  if (malicious >= 1 || suspicious >= 3)\n    return { risk: \"Medium Risk\", confidence: Math.min(malicious * 15 + suspicious * 8, 85) };\n  return { risk: \"Low Risk\", confidence: Math.min((suspicious || 0) * 10, 70) };\n}\n\n// Hardcoded text message to support dense similarity\nfunction renderMessage(url, risk, confidence) {\n  switch (risk) {\n    case \"High Risk\":\n      return `⚠️ This link (${url}) is likely a scam. We are ${confidence}% confident it's dangerous.`;\n    case \"Medium Risk\":\n      return `⚠️ Caution advised: The link (${url}) may be unsafe. Scam confidence level: ${confidence}%.`;\n    case \"Low Risk\":\n      return `✅ This link (${url}) appears to be safe with (${100 - confidence}% confidence that it is not a scam link.`;\n    default:\n      return `All clean🔍! The link (${url}) shows no threat signals.`;\n  }\n}\n\nconst trustedEngines = new Set([\n  \"Microsoft\", \"Google Safebrowsing\", \"Kaspersky\", \"Bitdefender\", \"ESET\",\n  \"Sophos\", \"Fortinet\", \"McAfee\", \"TrendMicro\", \"Symantec\", \"CrowdStrike\",\n  \"Cisco Talos\", \"Palo Alto Networks\", \"Check Point\", \"F-Secure\"\n]);\n\n// Extract categorized verdicts by trusted engines\nconst trustedFlags = Object.entries(results)\n  .filter(([engine, verdict]) => trustedEngines.has(engine))\n  .map(([engine, verdict]) => ({\n    engine,\n    category: verdict.category,\n    result: verdict.result\n  }));\n\n// Group by category\nconst categorized = trustedFlags.reduce((acc, { engine, category }) => {\n  if (!acc[category]) acc[category] = [];\n  acc[category].push(engine);\n  return acc;\n}, {});\n\n// Compose readable sentences\nconst summaryParts = Object.entries(categorized).map(([category, engines]) => {\n  const engineList = engines.map(e => e.replace(/ Safebrowsing/, '')).join(\", \");\n  return `Reputable engine(s), like ${engineList}, has categorized the link as ${category}.`;\n});\n\nconst summary = summaryParts.length > 0\n  ? summaryParts.join(\" \")\n  : \"No high-reputation engines flagged this url.\";\n\nconst totalScanners = Object.keys(results).length;\nconst totalEngines = (stats.malicious || 0) + (stats.suspicious || 0) + (stats.undetected || 0) + (stats.harmless || 0);\nconst scanDate = new Date(task?.time).toLocaleDateString('en-GB', {\n  timeZone: 'Asia/Kuala_Lumpur',\n  day: '2-digit',\n  month: 'short',\n  year: 'numeric'\n});\n\nconst { risk, confidence } = classifyRisk(stats);\nconst message = renderMessage(url, risk, confidence);\nconst reportURL = task?.reportURL;\nconst screenshotURL = task?.screenshotURL;\n\nreturn [{\n  json: {\n    title: message,\n    filterbyScanID: scanId,\n    exact_url: url,\n    reportUrl: reportURL,\n    screenshotUrl: screenshotURL, \n    detection_counts: stats,\n    risk_level: risk,\n    confidence_score: confidence,\n    participating_partners: totalScanners,\n    //trusted_engine_verdicts: trustedFlags,\n    trusted_summary: `${summary} The link was scanned by ${totalEngines} antivirus engines on ${scanDate}. Full report of the scan can be access here at ` + `${task?.reportURL}\\n` + `The screenshot of the page can be access here at ` + `${task?.screenshotURL}`\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        420
+      ],
+      "id": "5c2ae5e9-bda7-461d-b235-5f361d4e34a7",
+      "name": "Data Transform"
+    },
+    {
+      "parameters": {
+        "chunkSize": 2000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        820,
+        640
+      ],
+      "id": "ddf46563-5192-4f73-a579-d86bf255c292",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "15YEmFZXdPBkYo1lDnYxaGDrs_Vs3KpX56OtE8gbl9Ks",
+          "mode": "list",
+          "cachedResultName": "recordTest",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15YEmFZXdPBkYo1lDnYxaGDrs_Vs3KpX56OtE8gbl9Ks/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuKlBeQroK-z_L6dqQ1cAVgXXWPkvQxxwXlYr987QIo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "scannedLink": "={{ $json.metadata.exact_url }}",
+            "riskLevel": "={{ $('Data Transform').item.json.risk_level }}",
+            "scanId": "={{ $json.metadata.filterbyScanID }}",
+            "reportUrl": "={{ $('Data Transform').item.json.reportUrl }}",
+            "screenshotUrl": "={{ $('Data Transform').item.json.screenshotUrl }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "scanId",
+              "displayName": "scanId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "scannedLink",
+              "displayName": "scannedLink",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "riskLevel",
+              "displayName": "riskLevel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reportUrl",
+              "displayName": "reportUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "screenshotUrl",
+              "displayName": "screenshotUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "useAppend": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        900,
+        320
+      ],
+      "id": "10c31610-ffd3-414f-913d-1e777d8a97bc",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zOcOC4cR0LZDtWVP",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "//Recursively flatten nested JSON into readable key-value lines\nfunction flattenJSON(obj, prefix = \"\") {\n  return Object.entries(obj || {}).reduce((acc, [key, val]) => {\n    const fullKey = prefix ? `${prefix}.${key}` : key;\n    if (Array.isArray(val)) {\n      acc.push(`${fullKey}: [${val.map(v => JSON.stringify(v)).join(\", \")}]`);\n    } else if (val && typeof val === \"object\") {\n      acc.push(...flattenJSON(val, fullKey));\n    } else {\n      acc.push(`${fullKey}: ${val}`);\n    }\n    return acc;\n  }, []);\n}\n\n//Return flattened report\nreturn items.map(({ json }) => ({\n  json: {\n    reportBody: flattenJSON(json).join('\\n')\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        320
+      ],
+      "id": "63800d0c-2aea-49f1-9042-cacabf87dc4e",
+      "name": "Flatten nested JSON"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fead26b5-31bf-44f7-88cc-1c62bdf351e6",
+              "name": "set_context",
+              "value": "={{ $json[\"reportBody\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        420,
+        420
+      ],
+      "id": "d217e211-9fe6-415e-bf41-99927547ec66",
+      "name": "return 1 item"
+    },
+    {
+      "parameters": {
+        "amount": 40,
+        "unit": "seconds"
+      },
+      "id": "59c22e71-c325-4062-84e3-7094102614f6",
+      "name": "Wait 40 secs",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        -460,
+        400
+      ],
+      "webhookId": "e02b0275-69bd-4784-9d67-cd2836ead3d3",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -80,
+        600
+      ],
+      "id": "973c657e-3a04-4274-969f-842c5dec8cab",
+      "name": "Wait 5 secs",
+      "webhookId": "bcf9b62e-4571-46b0-bba3-366ccab4125e"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "urlscan.io": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VirusTotal Scan URL": {
+      "main": [
+        [
+          {
+            "node": "Wait 15 secs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URLScan: Get report": {
+      "main": [
+        [
+          {
+            "node": "Merge Reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Reports": {
+      "main": [
+        [
+          {
+            "node": "Data Transform",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Merge Reports",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Wait 5 secs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 15 secs": {
+      "main": [
+        [
+          {
+            "node": "VT Report1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Merge Reports",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 40 secs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VT Report1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VT Report2": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Scan ID": {
+      "main": [
+        [
+          {
+            "node": "VT Report2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "urlscan.io",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "VirusTotal Scan URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Transform": {
+      "main": [
+        [
+          {
+            "node": "Flatten nested JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        []
+      ]
+    },
+    "Flatten nested JSON": {
+      "main": [
+        [
+          {
+            "node": "return 1 item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "return 1 item": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 40 secs": {
+      "main": [
+        [
+          {
+            "node": "URLScan: Get report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5 secs": {
+      "main": [
+        [
+          {
+            "node": "Set Scan ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e3330167-817d-4b53-ad85-15e7893686bd",
+  "meta": {
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "wzS6vJFQxmWosll1",
+  "tags": [
+    {
+      "createdAt": "2025-06-27T19:22:25.027Z",
+      "updatedAt": "2025-06-27T19:22:25.027Z",
+      "id": "Zh5xXSsqlL6RDOtv",
+      "name": "latest backend"
+    }
+  ]
+}
